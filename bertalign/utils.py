@@ -1,5 +1,9 @@
 import re
-from googletrans import Translator
+# from googletrans import Translator
+from langcodes import *
+import fasttext
+lid_model = fasttext.load_model('/lustre/fswork/projects/rech/mrn/ujd84yr/FastText/lid.176.ftz')
+
 from sentence_splitter import SentenceSplitter
 
 def clean_text(text):
@@ -13,13 +17,24 @@ def clean_text(text):
             clean_text.append(line)
     return "\n".join(clean_text)
     
-def detect_lang(text):
+def gt_detect_lang(text):
     translator = Translator(service_urls=[
       'translate.google.com.hk',
     ])
     max_len = 200
     chunk = text[0 : min(max_len, len(text))]
     lang = translator.detect(chunk).lang
+    if lang.startswith('zh'):
+        lang = 'zh'
+    return lang
+
+# fasttext predict lang on line at a time
+def detect_lang(text):
+    max_len = 200
+    first, *others = text.splitlines()
+    chunk = first[0 : min(max_len, len(first))]
+    predlang = lid_model.predict(chunk)
+    lang = predlang[0][0].split("__label__")[1]
     if lang.startswith('zh'):
         lang = 'zh'
     return lang
@@ -34,7 +49,7 @@ def split_sents(text, lang):
             sents = [sent.strip() for sent in sents]
         return sents
     else:
-        raise Exception('The language {} is not suppored yet.'.format(LANG.ISO[lang]))
+        raise Exception('The language {} is not supported yet.'.format(LANG.ISO[lang]))
     
 def _split_zh(text, limit=1000):
         sent_list = []
