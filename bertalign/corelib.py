@@ -24,8 +24,8 @@ def second_back_track(i, j, pointers, search_path, a_types):
 
 def second_back_track_score(i,j, pointers, cost, search_path, a_types, src_lens, tgt_lens):
     """ 
-    extract the alignment score and the length ratio 
-    between aligned source and target segments in byte. 
+    ziqian extract the alignment score and the length ratio 
+    between aligned source and target segments in byte.
     """
     scores = []
     length_ratio = []
@@ -36,13 +36,18 @@ def second_back_track_score(i,j, pointers, cost, search_path, a_types, src_lens,
         t = a_types[a][1]
 
         # score
-        scores.append(cost[i][j_offset])
+        scores.append (cost[i][j_offset])
         # length
-        # in case of empty alignment, the length is 3 for "PAD"
-        src_l = src_lens[s - 1, i - 1]
-        tgt_l = tgt_lens[t - 1, j - 1]
-        length_ratio.append( src_l/max(tgt_l,0.1))
-        
+        if a in [0,1]:
+            # in case of empty alignment, the length is 3 for "PAD", 
+            # we put the length ratio as NaN to distinguish it with other cases
+            length_ratio.append('NaN')
+        else:
+            src_l = src_lens[s - 1, i - 1]
+            tgt_l = tgt_lens[t - 1, j - 1]
+            length_ratio.append( src_l/max(tgt_l, 0.1))
+            print(src_l, tgt_l, length_ratio[-1] )
+
         i = i-s
         j = j-t
     
