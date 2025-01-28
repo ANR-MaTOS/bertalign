@@ -15,6 +15,8 @@ class Bertalign:
                  margin=True,
                  len_penalty=True,
                  is_split=False,
+                 src_lang = None,
+                 tgt_lang = None,
                  cos_similarity = True,
                ):
         
@@ -27,8 +29,10 @@ class Bertalign:
         
         src = clean_text(src)
         tgt = clean_text(tgt)
-        src_lang = detect_lang(src)
-        tgt_lang = detect_lang(tgt)
+        if src_lang is None:
+            src_lang =  detect_lang(src)
+        if tgt_lang is None:
+            tgt_lang = detect_lang(tgt)
         
         if is_split:
             src_sents = src.splitlines()
@@ -83,9 +87,10 @@ class Bertalign:
                                             self.char_ratio, self.skip, margin=self.margin, len_penalty=self.len_penalty)
         second_alignment = second_back_track(self.src_num, self.tgt_num, second_pointers, second_path, second_alignment_types)
         # record alignment scores
-        scores = second_back_track_score(self.src_num, self.tgt_num, second_pointers, cost, second_path, second_alignment_types)
+        scores, length_ratio = second_back_track_score(self.src_num, self.tgt_num, second_pointers, cost, 
+                                                       second_path, second_alignment_types, self.src_lens, self.tgt_lens)
 
-        self.scores = {'alignment score':  scores }
+        self.scores = {'bertalign':  scores, 'length_ratio': length_ratio}
         if self.cos_similarity:
             self.scores['cos']  = calculate_cos_similarity(self.src_num, self.tgt_num, second_pointers, second_path, second_alignment_types,
                                                   self.src_vecs, self.tgt_vecs)
@@ -97,11 +102,19 @@ class Bertalign:
         print(cost)
         print(second_alignment)
     
-    def print_sents(self):
+    def print_sents(self, print_scores = True):
+        # print(f"#SCORES: bertalign= | cos= | src/tgt=")
+        i = 0
         for bead in (self.result):
             src_line = self._get_line(bead[0], self.src_sents)
             tgt_line = self._get_line(bead[1], self.tgt_sents)
-            print(src_line + "\n" + tgt_line + "\n")
+            to_print = src_line + "\n" + tgt_line + "\n"
+            if print_scores:
+                print_cos = "" if self.scores.get('cos', None) is None else f"cos= {self.scores['cos'][i]}| "
+                to_print = to_print + f"#SCORES: bertalign= {self.scores['bertalign'][i]}| " + print_cos + f"src/tgt= {self.scores['length_ratio'][i]}" + "\n"
+                i+=1
+            print(to_print)
+            
 
     def store_sents(self, src_store_path, tgt_store_path):
         src_lines = []

@@ -22,21 +22,32 @@ def second_back_track(i, j, pointers, search_path, a_types):
             return alignment[::-1]
         
 
-def second_back_track_score(i,j, pointers, cost, search_path, a_types):
-    """ extract also the alignment score """
+def second_back_track_score(i,j, pointers, cost, search_path, a_types, src_lens, tgt_lens):
+    """ 
+    extract the alignment score and the length ratio 
+    between aligned source and target segments in byte. 
+    """
     scores = []
+    length_ratio = []
     while( 1 ):
         j_offset = j - search_path[i][0]
         a = pointers[i][j_offset]
-        scores.append (cost[i][j_offset])
-
         s = a_types[a][0]
         t = a_types[a][1]
+
+        # score
+        scores.append(cost[i][j_offset])
+        # length
+        # in case of empty alignment, the length is 3 for "PAD"
+        src_l = src_lens[s - 1, i - 1]
+        tgt_l = tgt_lens[t - 1, j - 1]
+        length_ratio.append( src_l/max(tgt_l,0.1))
+        
         i = i-s
         j = j-t
     
         if i == 0 and j == 0:
-            return scores[::-1]
+            return scores[::-1], length_ratio[::-1]
         
 
 def calculate_cos_similarity(i,j, pointers, search_path, a_types, src_vecs, tgt_vecs):
