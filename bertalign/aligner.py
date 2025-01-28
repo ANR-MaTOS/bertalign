@@ -15,6 +15,7 @@ class Bertalign:
                  margin=True,
                  len_penalty=True,
                  is_split=False,
+                 cos_similarity = True,
                ):
         
         self.max_align = max_align
@@ -62,6 +63,8 @@ class Bertalign:
         self.char_ratio = char_ratio
         self.src_vecs = src_vecs
         self.tgt_vecs = tgt_vecs
+        self.scores = None
+        self.cos_similarity = cos_similarity
         
     def align_sents(self):
 
@@ -75,19 +78,47 @@ class Bertalign:
         print("Performing second-step alignment ...")
         second_alignment_types = get_alignment_types(self.max_align)
         second_w, second_path = find_second_search_path(first_alignment, self.win, self.src_num, self.tgt_num)
-        second_pointers = second_pass_align(self.src_vecs, self.tgt_vecs, self.src_lens, self.tgt_lens,
+        second_pointers, cost = second_pass_align(self.src_vecs, self.tgt_vecs, self.src_lens, self.tgt_lens,
                                             second_w, second_path, second_alignment_types,
                                             self.char_ratio, self.skip, margin=self.margin, len_penalty=self.len_penalty)
         second_alignment = second_back_track(self.src_num, self.tgt_num, second_pointers, second_path, second_alignment_types)
+        # record alignment scores
+        scores = second_back_track_score(self.src_num, self.tgt_num, second_pointers, cost, second_path, second_alignment_types)
+
+        self.scores = {'alignment score':  scores }
+        if self.cos_similarity:
+            self.scores['cos']  = calculate_cos_similarity(self.src_num, self.tgt_num, second_pointers, second_path, second_alignment_types,
+                                                  self.src_vecs, self.tgt_vecs)
         
         print("Finished! Successfully aligning {} {} sentences to {} {} sentences\n".format(self.src_num, self.src_lang, self.tgt_num, self.tgt_lang))
         self.result = second_alignment
+
+        print(second_pointers)
+        print(cost)
+        print(second_alignment)
     
     def print_sents(self):
         for bead in (self.result):
             src_line = self._get_line(bead[0], self.src_sents)
             tgt_line = self._get_line(bead[1], self.tgt_sents)
             print(src_line + "\n" + tgt_line + "\n")
+
+    def store_sents(self, src_store_path, tgt_store_path):
+        src_lines = []
+        tgt_lines = []
+        for bead in (self.result):
+            src_lines.append( self._get_line(bead[0], self.src_sents))
+            tgt_lines.append( self._get_line(bead[1], self.tgt_sents))
+
+        with open(src_store_path, 'w', encoding = 'utf-8') as f:
+            f.write('\n'.join(src_lines))
+
+        with open(tgt_store_path, 'w', encoding = 'utf-8') as f:
+            f.write('\n'.join(tgt_lines))
+    
+    def get_align_score(self):
+        """alignment score"""
+        return self.scores
 
     @staticmethod
     def _get_line(bead, lines):

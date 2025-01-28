@@ -20,6 +20,43 @@ def second_back_track(i, j, pointers, search_path, a_types):
     
         if i == 0 and j == 0:
             return alignment[::-1]
+        
+
+def second_back_track_score(i,j, pointers, cost, search_path, a_types):
+    """ extract also the alignment score """
+    scores = []
+    while( 1 ):
+        j_offset = j - search_path[i][0]
+        a = pointers[i][j_offset]
+        scores.append (cost[i][j_offset])
+
+        s = a_types[a][0]
+        t = a_types[a][1]
+        i = i-s
+        j = j-t
+    
+        if i == 0 and j == 0:
+            return scores[::-1]
+        
+
+def calculate_cos_similarity(i,j, pointers, search_path, a_types, src_vecs, tgt_vecs):
+    """ extract the aligned segments then compute their cosine similarity """
+    scores = []
+    while( 1 ):
+        j_offset = j - search_path[i][0]
+        a = pointers[i][j_offset]
+        s = a_types[a][0]
+        t = a_types[a][1]
+        # extract the embeddings to calculate their cos similarity
+        src_v = src_vecs[s - 1, i - 1, :]
+        tgt_v = tgt_vecs[t - 1, j - 1, :]
+        scores.append( nb_cos(src_v, tgt_v))
+
+        i = i-s
+        j = j-t
+
+        if i == 0 and j == 0:
+            return scores[::-1]
 
 @nb.jit(nopython=True, fastmath=True, cache=True)
 def second_pass_align(src_vecs,
@@ -102,7 +139,7 @@ def second_pass_align(src_vecs,
             cost[i][j_offset] = best_score
             pointers[i][j_offset] = best_a
       
-    return pointers
+    return pointers,cost
 
 @nb.jit(nopython=True, fastmath=True, cache=True)
 def calculate_similarity_score(src_vecs,
@@ -194,6 +231,13 @@ def calculate_length_penalty(src_lens,
 @nb.jit(nopython=True, fastmath=True, cache=True)
 def nb_dot(x, y):
     return np.dot(x,y)
+
+@nb.jit(nopython=True, fastmath=True, cache=True)
+def nb_cos(x, y):
+    """ ziqian comput cosine similarity """
+    norm_xy = np.sqrt(np.sum(x**2)) * np.sqrt(np.sum(y**2))
+    res = np.dot(x,y)/norm_xy
+    return res
 
 def find_second_search_path(align, w, src_len, tgt_len):
     """
