@@ -36,7 +36,7 @@ def second_back_track_score(i,j, pointers, cost, search_path, a_types, src_lens,
         t = a_types[a][1]
 
         # score
-        scores.append (cost[i][j_offset])
+        scores.append(cost[i][j_offset])
         # length
         if a in [0,1]:
             # in case of empty alignment, the length is 3 for "PAD", 
@@ -46,13 +46,13 @@ def second_back_track_score(i,j, pointers, cost, search_path, a_types, src_lens,
             src_l = src_lens[s - 1, i - 1]
             tgt_l = tgt_lens[t - 1, j - 1]
             length_ratio.append( src_l/max(tgt_l, 0.1))
-            print(src_l, tgt_l, length_ratio[-1] )
 
         i = i-s
         j = j-t
     
         if i == 0 and j == 0:
-            return scores[::-1], length_ratio[::-1]
+            # transform the accumulated sum to the alignment score of each aligned pair.
+            return np.diff(scores[::-1], prepend = 0), length_ratio[::-1]
         
 
 def calculate_cos_similarity(i,j, pointers, search_path, a_types, src_vecs, tgt_vecs):
