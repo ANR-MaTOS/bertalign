@@ -98,9 +98,9 @@ class Bertalign:
         print("Finished! Successfully aligning {} {} sentences to {} {} sentences\n".format(self.src_num, self.src_lang, self.tgt_num, self.tgt_lang))
         self.result = second_alignment
 
-        print(second_pointers)
-        print(cost)
-        print(second_alignment)
+        # print(second_pointers)
+        # print(cost)
+        # print(second_alignment)
     
     def print_sents(self, print_scores = True):
         # print(f"#SCORES: bertalign= | cos= | src/tgt=")
