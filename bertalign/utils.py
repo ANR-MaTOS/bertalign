@@ -1,8 +1,9 @@
 import re
 # from googletrans import Translator
 from langcodes import *
-import fasttext
-lid_model = fasttext.load_model('/lustre/fswork/projects/rech/mrn/ujd84yr/FastText/lid.176.ftz')
+# import fasttext
+# lid_model = fasttext.load_model('/lustre/fswork/projects/rech/mrn/ujd84yr/FastText/lid.176.ftz')
+from bertalign import lid_model 
 
 from sentence_splitter import SentenceSplitter
 
@@ -17,16 +18,16 @@ def clean_text(text):
             clean_text.append(line)
     return "\n".join(clean_text)
     
-def gt_detect_lang(text):
-    translator = Translator(service_urls=[
-      'translate.google.com.hk',
-    ])
-    max_len = 200
-    chunk = text[0 : min(max_len, len(text))]
-    lang = translator.detect(chunk).lang
-    if lang.startswith('zh'):
-        lang = 'zh'
-    return lang
+# def gt_detect_lang(text):
+#     translator = Translator(service_urls=[
+#       'translate.google.com.hk',
+#     ])
+#     max_len = 200
+#     chunk = text[0 : min(max_len, len(text))]
+#     lang = translator.detect(chunk).lang
+#     if lang.startswith('zh'):
+#         lang = 'zh'
+#     return lang
 
 # fasttext predict lang on line at a time
 def detect_lang(text):
