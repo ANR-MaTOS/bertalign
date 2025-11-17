@@ -3,7 +3,6 @@ import re
 from langcodes import *
 # import fasttext
 # lid_model = fasttext.load_model('/lustre/fswork/projects/rech/mrn/ujd84yr/FastText/lid.176.ftz')
-from bertalign import lid_model 
 
 from sentence_splitter import SentenceSplitter
 
@@ -30,7 +29,7 @@ def clean_text(text):
 #     return lang
 
 # fasttext predict lang on line at a time
-def detect_lang(text):
+def detect_lang(text, lid_model):
     max_len = 200
     first, *others = text.splitlines()
     chunk = first[0 : min(max_len, len(first))]

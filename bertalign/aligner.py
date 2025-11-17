@@ -1,6 +1,6 @@
 import numpy as np
 
-from bertalign import model
+from bertalign import model, lid_model
 from bertalign.corelib import *
 from bertalign.utils import *
 
@@ -30,9 +30,9 @@ class Bertalign:
         src = clean_text(src)
         tgt = clean_text(tgt)
         if src_lang is None:
-            src_lang =  detect_lang(src)
+            src_lang =  detect_lang(src, lid_model)
         if tgt_lang is None:
-            tgt_lang = detect_lang(tgt)
+            tgt_lang = detect_lang(tgt, lid_model)
         
         if is_split:
             src_sents = src.splitlines()
