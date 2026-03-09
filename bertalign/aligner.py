@@ -1,6 +1,6 @@
 import numpy as np
 
-from bertalign import model, lid_model
+from bertalign.models import model, lid_model
 from bertalign.corelib import *
 from bertalign.utils import *
 
@@ -128,6 +128,16 @@ class Bertalign:
 
         with open(tgt_store_path, 'w', encoding = 'utf-8') as f:
             f.write('\n'.join(tgt_lines))
+    
+    
+    def get_align_sents(self):
+        src_lines = []
+        tgt_lines = []
+        for bead in (self.result):
+            src_lines.append( self._get_line(bead[0], self.src_sents))
+            tgt_lines.append( self._get_line(bead[1], self.tgt_sents))
+
+        return src_lines, tgt_lines
     
     def get_align_score(self):
         """alignment score"""
