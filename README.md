@@ -1,5 +1,25 @@
 # Bertalign
 
+This repository contains an adapted version of Bertalign. The original implementation is available at: https://github.com/bfsujason/bertalign. The original README is reproduced below for reference.
+
+The main modifications introduced in this version are:
+1. **Length penalty slack (`len_slack`)**
+   We introduce a new parameter, `len_slack`, which suppresses the length penalty when the source and target segment lengths are sufficiently similar. Specifically, no penalty is applied when the length ratio falls within the specified slack range around 1. This modification reduces the number of spurious many-to-many alignments. For English–French alignment, we use `len_slack = 0.15` in our experiments.
+
+2. In this version, we replace GoogleTrans with FastText for **language detection**.
+
+3. After alignment, we extract and report the following information for each aligned segment pair:
+   * the cosine similarity between segment embeddings,
+   * the source-to-target length ratio, and
+   * the cumulative alignment score obtained during Bertalign's second backtracking stage.
+
+4. Two convenience methods have been added to the `Bertalign` class:
+   * `store_sents(self, src_store_path, tgt_store_path)`, which stores the aligned source and target segments at the specified paths; and
+   * `get_align_score(self)`, which returns the alignment scores.
+
+---
+# Bertalign
+
 An automatic mulitlingual sentence aligner.
 
 Bertalign is designed to facilitate the construction of multilingual parallel corpora and translation memories, which have a wide range of applications in translation-related research such as corpus-based translation studies, contrastive linguistics, computer-assisted translation, translator education and machine translation.
